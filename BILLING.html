@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electrical Shop POS | Professional</title>
+    <style>
+        :root {
+            --primary: #1e293b; --accent: #6d28d9; --success: #059669; 
+            --danger: #dc2626; --bg: #f8fafc; --card-bg: #ffffff;
+            --text-main: #0f172a; --text-muted: #64748b;
+        }
+
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; color: var(--text-main); line-height: 1.5; }
+        
+        /* Navigation - Auto Align Scroll for Mobile */
+        nav { background: var(--primary); padding: 10px 0; position: sticky; top: 0; z-index: 1000; }
+        .nav-container { 
+            max-width: 1100px; margin: 0 auto; display: flex; 
+            overflow-x: auto; white-space: nowrap; gap: 8px; padding: 0 15px;
+            scrollbar-width: none;
+        }
+        .nav-link { 
+            color: #cbd5e1; text-decoration: none; font-weight: 600; 
+            padding: 10px 16px; border-radius: 8px; font-size: 0.85rem; transition: 0.3s; cursor: pointer;
+        }
+        .nav-link.active { background: var(--accent); color: white; }
+
+        /* Responsive Page Container */
+        .page { display: none; width: 95%; max-width: 1000px; margin: 20px auto; animation: fadeIn 0.3s ease; }
+        .page.active { display: block; }
+        .card { background: var(--card-bg); padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+
+        /* Responsive Grids */
+        .input-grid { display: grid; gap: 15px; margin-bottom: 20px; grid-template-columns: 1fr; }
+        @media (min-width: 600px) { .grid-3 { grid-template-columns: 2fr 1fr 1fr; } }
+        @media (min-width: 768px) { .grid-item-row { grid-template-columns: 2fr 1fr 0.5fr auto; align-items: flex-end; } }
+
+        /* Invoice Header */
+        .invoice-header { display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px; }
+        @media (min-width: 600px) { .invoice-header { flex-direction: row; justify-content: space-between; } }
+        .invoice-id-box { background: var(--bg); padding: 12px 20px; border-radius: 12px; border: 1px dashed #cbd5e1; text-align: center; }
+
+        /* Form Styling */
+        .field { display: flex; flex-direction: column; gap: 5px; position: relative; }
+        .field label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+        input { padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 1rem; width: 100%; box-sizing: border-box; }
+        input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.1); }
+
+        /* Table Responsive */
+        .table-wrap { width: 100%; overflow-x: auto; border-radius: 12px; border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; min-width: 550px; }
+        th { background: #f8fafc; padding: 12px; font-size: 0.75rem; text-transform: uppercase; border-bottom: 1.5px solid #e2e8f0; }
+        td { padding: 12px; border-bottom: 1px solid #f1f5f9; text-align: center; }
+
+        /* Buttons */
+        .btn { padding: 12px 20px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-success { background: var(--success); color: white; width: 100%; padding: 15px; margin-top: 20px; font-size: 1rem; }
+        .btn-danger-outline { background: transparent; border: 1.5px solid var(--danger); color: var(--danger); font-size: 0.8rem; padding: 6px 12px; }
+
+        /* Search Dropdown */
+        .search-results { position: absolute; top: 100%; left: 0; right: 0; background: white; box-shadow: 0 10px 15px rgba(0,0,0,0.1); z-index: 100; display: none; border: 1px solid #e2e8f0; border-radius: 8px; }
+        .search-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
+
+        .data-item { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media print {
+            nav, .no-print, .btn, label { display: none !important; }
+            .page { width: 100%; margin: 0; }
+            .card { box-shadow: none; border: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="no-print">
+    <div class="nav-container">
+        <div class="nav-link active" onclick="window.showPage('billingPage')">New Bill</div>
+        <div class="nav-link" onclick="window.showPage('historyPage')">Sales History</div>
+        <div class="nav-link" onclick="window.showPage('customerPage')">Customers</div>
+        <div class="nav-link" onclick="window.showPage('inventoryPage')">Inventory</div>
+    </div>
+</nav>
+
+<div id="billingPage" class="page active">
+    <div class="card">
+        <div class="invoice-header">
+            <div>
+                <h2 style="margin:0; color:var(--accent);">ELECTRICAL SHOP</h2>
+                <p style="margin:5px 0; color:var(--text-muted);">Sharjah, UAE</p>
+            </div>
+            <div class="invoice-id-box">
+                <small>INVOICE NO</small><br>
+                <span id="invNumber" style="font-size: 1.4rem; font-weight: 800;">...</span>
+                <div id="currDate" style="font-size: 0.8rem;"></div>
+            </div>
+        </div>
+
+        <div class="input-grid grid-3 no-print">
+            <div class="field">
+                <label>Customer</label>
+                <input type="text" id="custNameInput" oninput="window.filterCustomers()" placeholder="Search Name">
+                <div id="custDropdown" class="search-results"></div>
+            </div>
+            <div class="field"><label>Phone</label><input type="text" id="custPhone"></div>
+            <div class="field"><label>Discount %</label><input type="number" id="custDiscount" value="0" oninput="window.updateCalculations()"></div>
+        </div>
+
+        <div style="margin-bottom: 20px; border-left: 4px solid var(--accent); padding-left: 15px;">
+            <div id="printName" style="font-weight: 700; font-size: 1.1rem;">Walking Customer</div>
+            <div id="printPhone" style="color: var(--text-muted);">---</div>
+        </div>
+
+        <div class="input-grid grid-item-row no-print">
+            <div class="field">
+                <label>Item Name</label>
+                <input type="text" id="prodSearch" oninput="window.filterProducts()" placeholder="Select Item">
+                <div id="prodDropdown" class="search-results"></div>
+            </div>
+            <div class="field"><label>Price</label><input type="number" id="billPrice"></div>
+            <div class="field"><label>Qty</label><input type="number" id="billQty" value="1"></div>
+            <button class="btn btn-primary" onclick="window.addItem()">+ ADD</button>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th style="text-align:left">Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
+                <tbody id="billBody"></tbody>
+            </table>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; margin-top: 20px;">
+            <div style="width: 250px;">
+                <div style="display:flex; justify-content:space-between;"><span>Subtotal</span><span>AED <span id="subTotalDisplay">0.00</span></span></div>
+                <div style="display:flex; justify-content:space-between; color:var(--danger);"><span>Discount</span><span>- AED <span id="discAmountDisplay">0.00</span></span></div>
+                <div style="display:flex; justify-content:space-between; font-weight:800; font-size:1.3rem; border-top:2px solid #000; margin-top:10px; padding-top:10px;">
+                    <span>TOTAL</span><span id="grandTotalDisplay">0.00</span>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-success no-print" onclick="window.saveBill()">CONFIRM & PRINT</button>
+    </div>
+</div>
+
+<div id="historyPage" class="page"><div class="card"><h3>History</h3><div style="display:flex; gap:10px; margin-bottom:15px;"><button class="btn btn-primary" onclick="window.bulkPrint()">Bulk Print</button><button class="btn btn-danger-outline" onclick="window.clearAllBills()">Clear</button></div><div id="historyList"></div></div></div>
+<div id="customerPage" class="page"><div class="card"><h3>Customers</h3><div id="customerList"></div></div></div>
+<div id="inventoryPage" class="page"><div class="card"><h3>Inventory</h3><div class="input-grid grid-3" style="align-items:end;"><div class="field"><label>Name</label><input type="text" id="mName"></div><div class="field"><label>Price</label><input type="number" id="mPrice"></div><button class="btn btn-primary" onclick="window.saveProduct()">Save</button></div><div id="inventoryList" style="margin-top:20px;"></div></div></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, collection, getDocs, query, orderBy, addDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCG53AlYrlOqjp2toiI_vbMlblbVp7b900",
+        authDomain: "bill-a5c73.firebaseapp.com",
+        projectId: "bill-a5c73",
+        storageBucket: "bill-a5c73.firebasestorage.app",
+        messagingSenderId: "40904746442",
+        appId: "1:40904746442:web:8d01588d03309e682e5b33"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    let billItems = [], cloudProducts = [], cloudCustomers = [], historyData = [];
+
+    // ATTACH TO WINDOW FOR GLOBAL ACCESS
+    window.showPage = (id) => {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        const link = Array.from(document.querySelectorAll('.nav-link')).find(l => l.getAttribute('onclick').includes(id));
+        if(link) link.classList.add('active');
+
+        if(id === 'historyPage') window.loadHistory();
+        if(id === 'customerPage') window.loadCustomerList();
+        if(id === 'inventoryPage') window.loadInventory();
+    };
+
+    async function init() {
+        document.getElementById('currDate').innerText = new Date().toLocaleDateString('en-GB');
+        const invSnap = await getDoc(doc(db, "settings", "invoiceConfig"));
+        document.getElementById('invNumber').innerText = invSnap.exists() ? invSnap.data().lastNumber + 1 : 1001;
+        window.fetchData();
+    }
+
+    window.fetchData = async () => {
+        const pSnap = await getDocs(collection(db, "products"));
+        cloudProducts = []; pSnap.forEach(d => cloudProducts.push(d.data()));
+        const cSnap = await getDocs(collection(db, "customers"));
+        cloudCustomers = []; cSnap.forEach(d => cloudCustomers.push(d.data()));
+    };
+
+    window.filterCustomers = () => {
+        const val = document.getElementById('custNameInput').value.toLowerCase();
+        const drop = document.getElementById('custDropdown');
+        drop.innerHTML = ""; drop.style.display = val ? "block" : "none";
+        cloudCustomers.filter(c => c.name.toLowerCase().includes(val)).forEach(c => {
+            const d = document.createElement('div'); d.className='search-item'; d.innerText=c.name;
+            d.onclick = () => {
+                document.getElementById('custNameInput').value = c.name;
+                document.getElementById('printName').innerText = c.name;
+                document.getElementById('custPhone').value = c.phone || "";
+                document.getElementById('custDiscount').value = c.discount || 0;
+                drop.style.display="none"; window.updateCalculations();
+            };
+            drop.appendChild(d);
+        });
+        document.getElementById('printName').innerText = document.getElementById('custNameInput').value || "Walking Customer";
+    };
+
+    window.filterProducts = () => {
+        const val = document.getElementById('prodSearch').value.toLowerCase();
+        const drop = document.getElementById('prodDropdown');
+        drop.innerHTML = ""; drop.style.display = val ? "block" : "none";
+        cloudProducts.filter(p => p.itemName.toLowerCase().includes(val)).forEach(p => {
+            const d = document.createElement('div'); d.className='search-item'; d.innerText=p.itemName;
+            d.onclick = () => { document.getElementById('prodSearch').value = p.itemName; document.getElementById('billPrice').value = p.price; drop.style.display="none"; };
+            drop.appendChild(d);
+        });
+    };
+
+    window.addItem = () => {
+        const n = document.getElementById('prodSearch').value, p = parseFloat(document.getElementById('billPrice').value), q = parseInt(document.getElementById('billQty').value);
+        if(!n || isNaN(p)) return;
+        billItems.push({ n, p, q, t: p * q });
+        const b = document.getElementById('billBody'); b.innerHTML = "";
+        billItems.forEach(i => b.innerHTML += `<tr><td style="text-align:left">${i.n}</td><td>${i.q}</td><td>${i.p.toFixed(2)}</td><td>${i.t.toFixed(2)}</td></tr>`);
+        window.updateCalculations();
+        document.getElementById('prodSearch').value = ""; document.getElementById('billPrice').value = "";
+    };
+
+    window.updateCalculations = () => {
+        let sub = billItems.reduce((s, i) => s + i.t, 0);
+        const dP = parseFloat(document.getElementById('custDiscount').value) || 0;
+        const dA = sub * (dP / 100);
+        document.getElementById('subTotalDisplay').innerText = sub.toFixed(2);
+        document.getElementById('discAmountDisplay').innerText = dA.toFixed(2);
+        document.getElementById('grandTotalDisplay').innerText = (sub - dA).toFixed(2);
+        document.getElementById('printPhone').innerText = document.getElementById('custPhone').value || "---";
+    };
+
+    window.saveBill = async () => {
+        const name = document.getElementById('custNameInput').value || "Walking Customer";
+        if(!billItems.length) return;
+        const invData = { 
+            id: document.getElementById('invNumber').innerText, customer: name, phone: document.getElementById('custPhone').value,
+            items: billItems, total: document.getElementById('grandTotalDisplay').innerText, date: new Date().toLocaleDateString(), ts: new Date() 
+        };
+        await addDoc(collection(db, "invoices"), invData);
+        if(name !== "Walking Customer") await setDoc(doc(db, "customers", name.toLowerCase()), { name, phone: invData.phone, discount: document.getElementById('custDiscount').value }, { merge: true });
+        await updateDoc(doc(db, "settings", "invoiceConfig"), { lastNumber: increment(1) });
+        window.print(); location.reload();
+    };
+
+    window.loadInventory = async () => {
+        const s = await getDocs(collection(db, "products"));
+        const l = document.getElementById('inventoryList'); l.innerHTML = "";
+        s.forEach(d => {
+            const item = d.data();
+            l.innerHTML += `<div class="data-item"><div><strong>${item.itemName}</strong><br>AED ${item.price}</div><button class="btn-danger-outline" onclick="window.deleteEntry('products', '${d.id}', window.loadInventory)">Delete</button></div>`;
+        });
+    };
+
+    window.saveProduct = async () => {
+        const n = document.getElementById('mName').value, p = parseFloat(document.getElementById('mPrice').value);
+        if(n && !isNaN(p)) { await setDoc(doc(db, "products", n.toLowerCase()), { itemName: n, price: p }); document.getElementById('mName').value = ""; document.getElementById('mPrice').value = ""; await window.fetchData(); window.loadInventory(); }
+    };
+
+    window.loadHistory = async () => {
+        const snap = await getDocs(query(collection(db, "invoices"), orderBy("ts", "desc")));
+        const list = document.getElementById('historyList'); list.innerHTML = ""; historyData = [];
+        snap.forEach(d => {
+            const data = { fid: d.id, ...d.data() }; historyData.push(data);
+            list.innerHTML += `<div class="data-item"><div style="display:flex; gap:10px;"><input type="checkbox" class="bulk-check" value="${data.fid}"><div><strong>#${data.id}</strong> - ${data.customer}</div></div><strong>AED ${data.total}</strong></div>`;
+        });
+    };
+
+    window.bulkPrint = () => {
+        const ids = Array.from(document.querySelectorAll('.bulk-check:checked')).map(cb => cb.value);
+        if(!ids.length) return alert("Select bills");
+        let pContent = `<style>body{font-family:sans-serif;}.bill{padding:40px; border-bottom:1px dashed #000; page-break-after:always;}table{width:100%; border-collapse:collapse;}th{background:#6d28d9; color:white; padding:10px;}td{padding:10px; border-bottom:1px solid #eee; text-align:center;}</style>`;
+        ids.forEach(id => {
+            const b = historyData.find(x => x.fid === id);
+            let rows = b.items.map(i => `<tr><td>${i.n}</td><td>${i.q}</td><td>${i.p}</td><td>${i.t}</td></tr>`).join('');
+            pContent += `<div class="bill"><h2>ELECTRICAL SHOP</h2><p>Invoice #${b.id} | ${b.date}</p><p>Customer: ${b.customer}</p><table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table><h3 style="text-align:right">TOTAL: AED ${b.total}</h3></div>`;
+        });
+        const pWin = window.open('', '_blank'); pWin.document.write(pContent); pWin.document.close();
+        setTimeout(() => { pWin.print(); pWin.close(); }, 500);
+    };
+
+    window.loadCustomerList = async () => {
+        const s = await getDocs(collection(db, "customers"));
+        const l = document.getElementById('customerList'); l.innerHTML = "";
+        s.forEach(d => l.innerHTML += `<div class="data-item"><div><strong>${d.data().name}</strong></div><button class="btn-danger-outline" onclick="window.deleteEntry('customers', '${d.id}', window.loadCustomerList)">Delete</button></div>`);
+    };
+
+    window.deleteEntry = async (c, id, cb) => { if(confirm("Delete?")) { await deleteDoc(doc(db, c, id)); await window.fetchData(); cb(); } };
+    window.clearAllBills = async () => { if(confirm("Clear All?") && prompt("Type DELETE") === "DELETE") { const b = writeBatch(db); const s = await getDocs(collection(db, 'invoices')); s.forEach(d => b.delete(d.ref)); await b.commit(); window.loadHistory(); } };
+
+    init();
+</script>
+</body>
+</html>
